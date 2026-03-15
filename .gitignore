@@ -1,6 +1,11 @@
 *.vo
 *.vok
 *.vos
+*.vio
 *.glob
 .*.aux
 *.crashcoqide
+.coq-native/
+Makefile.coq
+Makefile.coq.conf
+_damos_*
