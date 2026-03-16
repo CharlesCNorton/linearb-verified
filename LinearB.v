@@ -2456,6 +2456,37 @@ Definition damos_pylos_829_snapshot : option damos_tablet_snapshot :=
 Definition damos_pylos_131_snapshot : option damos_tablet_snapshot :=
   lookup_damos_snapshot_by_id 4376 damos_pylos_jn_cn_snapshots.
 
+Definition snapshot_has_single_hand_candidate
+  (snapshot : damos_tablet_snapshot) : bool :=
+  Nat.eqb (length (damos_snapshot_hand_candidates snapshot)) 1.
+
+Definition snapshot_has_ambiguous_hand_candidates
+  (snapshot : damos_tablet_snapshot) : bool :=
+  Nat.leb 2 (length (damos_snapshot_hand_candidates snapshot)).
+
+Definition snapshot_has_single_stylus_candidate
+  (snapshot : damos_tablet_snapshot) : bool :=
+  Nat.eqb (length (damos_snapshot_stylus_candidates snapshot)) 1.
+
+Definition snapshot_has_no_stylus_candidate
+  (snapshot : damos_tablet_snapshot) : bool :=
+  Nat.eqb (length (damos_snapshot_stylus_candidates snapshot)) 0.
+
+Definition snapshot_has_ambiguous_stylus_candidates
+  (snapshot : damos_tablet_snapshot) : bool :=
+  Nat.leb 2 (length (damos_snapshot_stylus_candidates snapshot)).
+
+Definition snapshot_in_room7_cluster
+  (snapshot : damos_tablet_snapshot) : bool :=
+  match damos_snapshot_find_area snapshot with
+  | PylosAreaRoom7
+  | PylosAreaRoom7AndChasm
+  | PylosAreaRoom7AndChasmRoom7_1
+  | PylosAreaChasmAndRoom7
+  | PylosAreaChasmAndRoom7_1 => true
+  | _ => false
+  end.
+
 Example damos_pylos_attested_slice_count :
   length damos_pylos_jn_cn_snapshots = 57.
 Proof.
@@ -2552,6 +2583,62 @@ Proof.
   vm_compute. reflexivity.
 Qed.
 
+Example damos_pylos_jn_all_hand_singletons :
+  all_damos_snapshots
+    snapshot_has_single_hand_candidate
+    damos_pylos_jn_snapshots = true.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_jn_all_stylus_singletons :
+  all_damos_snapshots
+    snapshot_has_single_stylus_candidate
+    damos_pylos_jn_snapshots = true.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_cn_ambiguous_hand_count :
+  count_damos_snapshots
+    snapshot_has_ambiguous_hand_candidates
+    damos_pylos_cn_snapshots = 5.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_cn_single_hand_count :
+  count_damos_snapshots
+    snapshot_has_single_hand_candidate
+    damos_pylos_cn_snapshots = 32.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_cn_single_stylus_count :
+  count_damos_snapshots
+    snapshot_has_single_stylus_candidate
+    damos_pylos_cn_snapshots = 28.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_cn_unknown_stylus_count :
+  count_damos_snapshots
+    snapshot_has_no_stylus_candidate
+    damos_pylos_cn_snapshots = 6.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_cn_ambiguous_stylus_count :
+  count_damos_snapshots
+    snapshot_has_ambiguous_stylus_candidates
+    damos_pylos_cn_snapshots = 3.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
 Example damos_pylos_jn_primary_profile_count :
   count_damos_snapshots
     (fun snapshot =>
@@ -2592,6 +2679,22 @@ Example damos_pylos_cn_room8_count :
   count_damos_snapshots
     (snapshot_in_find_area PylosAreaRoom8)
     damos_pylos_cn_snapshots = 24.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_jn_room7_cluster_count :
+  count_damos_snapshots
+    snapshot_in_room7_cluster
+    damos_pylos_jn_snapshots = 8.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_cn_room7_cluster_count :
+  count_damos_snapshots
+    snapshot_in_room7_cluster
+    damos_pylos_cn_snapshots = 5.
 Proof.
   vm_compute. reflexivity.
 Qed.
@@ -2657,6 +2760,324 @@ Example damos_pylos_131_snapshot_exact :
   Some
     (mk_damos_snapshot 4376 Series_Cn 131 1 [DamosHand1] [131]
                        PylosAreaRoom8 15 false false true true).
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Record damos_series_site_census_entry := {
+  damos_series_census_series : tablet_series;
+  damos_series_census_site : archive_site;
+  damos_series_census_count : nat
+}.
+
+Definition mk_damos_series_site_census_entry
+  (series : tablet_series)
+  (site : archive_site)
+  (count : nat) : damos_series_site_census_entry :=
+  {|
+    damos_series_census_series := series;
+    damos_series_census_site := site;
+    damos_series_census_count := count
+  |}.
+
+Definition damos_modeled_series_site_census :
+  list damos_series_site_census_entry :=
+[
+  mk_damos_series_site_census_entry Series_Aa SitePylos 49;
+  mk_damos_series_site_census_entry Series_Ab SitePylos 47;
+  mk_damos_series_site_census_entry Series_Ad SitePylos 37;
+  mk_damos_series_site_census_entry Series_An SitePylos 41;
+  mk_damos_series_site_census_entry Series_Cn SitePylos 37;
+  mk_damos_series_site_census_entry Series_Eb SitePylos 74;
+  mk_damos_series_site_census_entry Series_Fn SitePylos 16;
+  mk_damos_series_site_census_entry Series_Jn SitePylos 20;
+  mk_damos_series_site_census_entry Series_Ma SitePylos 18;
+  mk_damos_series_site_census_entry Series_Na SitePylos 102;
+  mk_damos_series_site_census_entry Series_Od SiteKnossos 81;
+  mk_damos_series_site_census_entry Series_Ta SitePylos 13;
+  mk_damos_series_site_census_entry Series_Ua SitePylos 11
+].
+
+Definition sum_damos_series_site_counts
+  (entries : list damos_series_site_census_entry) : nat :=
+  fold_right Nat.add 0 (map damos_series_census_count entries).
+
+Definition lookup_damos_modeled_series_count
+  (series : tablet_series)
+  (entries : list damos_series_site_census_entry) :
+  option (archive_site * nat) :=
+  match find
+          (fun entry =>
+             if tablet_series_eq_dec (damos_series_census_series entry) series
+             then true else false)
+          entries with
+  | Some entry =>
+      Some (damos_series_census_site entry, damos_series_census_count entry)
+  | None => None
+  end.
+
+Example damos_modeled_series_site_census_total :
+  sum_damos_series_site_counts damos_modeled_series_site_census = 546.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_modeled_series_site_census_pylos_total :
+  sum_damos_series_site_counts
+    (filter
+       (fun entry => archive_site_eqb (damos_series_census_site entry) SitePylos)
+       damos_modeled_series_site_census) = 465.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_modeled_series_site_census_knossos_total :
+  sum_damos_series_site_counts
+    (filter
+       (fun entry => archive_site_eqb (damos_series_census_site entry) SiteKnossos)
+       damos_modeled_series_site_census) = 81.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_modeled_series_jn_distribution :
+  lookup_damos_modeled_series_count Series_Jn damos_modeled_series_site_census =
+  Some (SitePylos, 20).
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_modeled_series_cn_distribution :
+  lookup_damos_modeled_series_count Series_Cn damos_modeled_series_site_census =
+  Some (SitePylos, 37).
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_modeled_series_od_distribution :
+  lookup_damos_modeled_series_count Series_Od damos_modeled_series_site_census =
+  Some (SiteKnossos, 81).
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_modeled_series_kn_absent :
+  lookup_damos_modeled_series_count Series_Kn damos_modeled_series_site_census = None.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_modeled_series_non_od_are_pylian :
+  forall entry,
+    In entry damos_modeled_series_site_census ->
+    damos_series_census_series entry <> Series_Od ->
+    damos_series_census_site entry = SitePylos.
+Proof.
+  intros entry Hin Hnotod.
+  repeat
+    (destruct Hin as [Hin | Hin];
+     [subst entry; simpl in Hnotod; try contradiction; reflexivity |]).
+  contradiction.
+Qed.
+
+Record damos_visible_marker_totals := {
+  damos_visible_marker_snapshot_id : nat;
+  damos_visible_aes_m_total : nat;
+  damos_visible_bos_total : nat;
+  damos_visible_ovism_total : nat;
+  damos_visible_ovisf_total : nat;
+  damos_visible_capf_total : nat
+}.
+
+Definition mk_damos_visible_marker_totals
+  (snapshot_id aes_m_total bos_total ovism_total ovisf_total capf_total : nat) :
+  damos_visible_marker_totals :=
+  {|
+    damos_visible_marker_snapshot_id := snapshot_id;
+    damos_visible_aes_m_total := aes_m_total;
+    damos_visible_bos_total := bos_total;
+    damos_visible_ovism_total := ovism_total;
+    damos_visible_ovisf_total := ovisf_total;
+    damos_visible_capf_total := capf_total
+  |}.
+
+Definition damos_pylos_visible_marker_totals :
+  list damos_visible_marker_totals :=
+[
+  mk_damos_visible_marker_totals 4681 19 0 0 0 0;
+  mk_damos_visible_marker_totals 4682 43 0 0 0 0;
+  mk_damos_visible_marker_totals 4683 79 0 0 0 0;
+  mk_damos_visible_marker_totals 4684 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4685 34 0 0 0 0;
+  mk_damos_visible_marker_totals 4686 103 0 0 0 0;
+  mk_damos_visible_marker_totals 4687 23 0 0 0 0;
+  mk_damos_visible_marker_totals 4688 107 0 0 0 0;
+  mk_damos_visible_marker_totals 4689 6 0 0 0 0;
+  mk_damos_visible_marker_totals 4690 70 0 0 0 0;
+  mk_damos_visible_marker_totals 4691 12 0 0 0 0;
+  mk_damos_visible_marker_totals 4692 42 0 0 0 0;
+  mk_damos_visible_marker_totals 4693 18 0 0 0 0;
+  mk_damos_visible_marker_totals 4694 31 0 0 0 0;
+  mk_damos_visible_marker_totals 4695 16 0 0 0 0;
+  mk_damos_visible_marker_totals 4696 35 0 0 0 0;
+  mk_damos_visible_marker_totals 4697 3 0 0 0 0;
+  mk_damos_visible_marker_totals 4698 20 0 0 0 0;
+  mk_damos_visible_marker_totals 4699 8 0 0 0 0;
+  mk_damos_visible_marker_totals 4701 4 0 0 0 0;
+  mk_damos_visible_marker_totals 4372 0 5 0 0 0;
+  mk_damos_visible_marker_totals 4373 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4374 0 0 893 210 0;
+  mk_damos_visible_marker_totals 4375 0 0 0 146 164;
+  mk_damos_visible_marker_totals 4376 0 0 1997 135 109;
+  mk_damos_visible_marker_totals 4377 0 0 204 0 0;
+  mk_damos_visible_marker_totals 5094 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4378 0 0 256 0 0;
+  mk_damos_visible_marker_totals 4380 0 0 340 0 0;
+  mk_damos_visible_marker_totals 4382 0 0 466 0 20;
+  mk_damos_visible_marker_totals 4383 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4384 0 0 162 0 0;
+  mk_damos_visible_marker_totals 4385 0 0 450 190 60;
+  mk_damos_visible_marker_totals 4386 0 0 4 0 0;
+  mk_damos_visible_marker_totals 4387 0 0 0 150 0;
+  mk_damos_visible_marker_totals 4388 0 0 50 0 0;
+  mk_damos_visible_marker_totals 4389 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4390 0 0 0 0 10;
+  mk_damos_visible_marker_totals 4391 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4392 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4393 0 0 60 50 2;
+  mk_damos_visible_marker_totals 4394 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4395 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4396 0 0 0 0 170;
+  mk_damos_visible_marker_totals 4397 0 0 492 270 39;
+  mk_damos_visible_marker_totals 4398 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4399 0 0 0 0 93;
+  mk_damos_visible_marker_totals 4400 0 0 1258 307 0;
+  mk_damos_visible_marker_totals 4401 0 0 100 40 60;
+  mk_damos_visible_marker_totals 4402 0 0 868 60 0;
+  mk_damos_visible_marker_totals 4403 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4404 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4405 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4406 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4407 0 0 2 0 0;
+  mk_damos_visible_marker_totals 4408 0 0 0 0 0;
+  mk_damos_visible_marker_totals 4409 0 0 0 0 11
+].
+
+Definition marker_totals_of_snapshot_list
+  (snapshots : list damos_tablet_snapshot)
+  (totals : list damos_visible_marker_totals) :
+  list damos_visible_marker_totals :=
+  filter
+    (fun total =>
+       existsb (Nat.eqb (damos_visible_marker_snapshot_id total))
+               (map damos_snapshot_id snapshots))
+    totals.
+
+Definition sum_damos_visible_marker
+  (project : damos_visible_marker_totals -> nat)
+  (totals : list damos_visible_marker_totals) : nat :=
+  fold_right Nat.add 0 (map project totals).
+
+Definition lookup_damos_visible_marker_totals
+  (snapshot_id : nat)
+  (totals : list damos_visible_marker_totals) :
+  option damos_visible_marker_totals :=
+  find (fun total => Nat.eqb (damos_visible_marker_snapshot_id total) snapshot_id)
+       totals.
+
+Definition damos_pylos_jn_visible_marker_totals :
+  list damos_visible_marker_totals :=
+  marker_totals_of_snapshot_list
+    damos_pylos_jn_snapshots
+    damos_pylos_visible_marker_totals.
+
+Definition damos_pylos_cn_visible_marker_totals :
+  list damos_visible_marker_totals :=
+  marker_totals_of_snapshot_list
+    damos_pylos_cn_snapshots
+    damos_pylos_visible_marker_totals.
+
+Example damos_pylos_visible_marker_totals_count :
+  length damos_pylos_visible_marker_totals = 57.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_829_visible_marker_totals_exact :
+  lookup_damos_visible_marker_totals 4696 damos_pylos_visible_marker_totals =
+  Some (mk_damos_visible_marker_totals 4696 35 0 0 0 0).
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_131_visible_marker_totals_exact :
+  lookup_damos_visible_marker_totals 4376 damos_pylos_visible_marker_totals =
+  Some (mk_damos_visible_marker_totals 4376 0 0 1997 135 109).
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_jn_visible_aes_m_total :
+  sum_damos_visible_marker
+    damos_visible_aes_m_total
+    damos_pylos_jn_visible_marker_totals = 673.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_jn_visible_pastoral_totals_are_zero :
+  sum_damos_visible_marker
+    damos_visible_bos_total
+    damos_pylos_jn_visible_marker_totals = 0 /\
+  sum_damos_visible_marker
+    damos_visible_ovism_total
+    damos_pylos_jn_visible_marker_totals = 0 /\
+  sum_damos_visible_marker
+    damos_visible_ovisf_total
+    damos_pylos_jn_visible_marker_totals = 0 /\
+  sum_damos_visible_marker
+    damos_visible_capf_total
+    damos_pylos_jn_visible_marker_totals = 0.
+Proof.
+  vm_compute. repeat split; reflexivity.
+Qed.
+
+Example damos_pylos_cn_visible_aes_m_total :
+  sum_damos_visible_marker
+    damos_visible_aes_m_total
+    damos_pylos_cn_visible_marker_totals = 0.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_cn_visible_bos_total :
+  sum_damos_visible_marker
+    damos_visible_bos_total
+    damos_pylos_cn_visible_marker_totals = 5.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_cn_visible_ovism_total :
+  sum_damos_visible_marker
+    damos_visible_ovism_total
+    damos_pylos_cn_visible_marker_totals = 7602.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_cn_visible_ovisf_total :
+  sum_damos_visible_marker
+    damos_visible_ovisf_total
+    damos_pylos_cn_visible_marker_totals = 1558.
+Proof.
+  vm_compute. reflexivity.
+Qed.
+
+Example damos_pylos_cn_visible_capf_total :
+  sum_damos_visible_marker
+    damos_visible_capf_total
+    damos_pylos_cn_visible_marker_totals = 738.
 Proof.
   vm_compute. reflexivity.
 Qed.
